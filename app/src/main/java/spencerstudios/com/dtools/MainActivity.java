@@ -12,6 +12,8 @@ import android.widget.ImageButton;
 
 import com.pixelcan.inkpageindicator.InkPageIndicator;
 
+import java.lang.reflect.Field;
+
 public class MainActivity extends AppCompatActivity {
 
     private ImageButton next, prev;
@@ -31,11 +33,20 @@ public class MainActivity extends AppCompatActivity {
         next = (ImageButton) findViewById(R.id.next);
 
         prev.setVisibility(View.INVISIBLE);
+
         SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         viewPager = (ViewPager) findViewById(R.id.container);
         viewPager.setAdapter(mSectionsPagerAdapter);
         viewPager.setPageTransformer(true, new PageAnimator());
+
+        try {
+            Field mScroller = ViewPager.class.getDeclaredField("mScroller");
+            mScroller.setAccessible(true);
+            mScroller.set(viewPager, new CustomScroller(MainActivity.this));
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
 
         InkPageIndicator inkPageIndicator = (InkPageIndicator) findViewById(R.id.indicator);
         inkPageIndicator.setViewPager(viewPager);
@@ -59,8 +70,10 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     case 4:
                         next.setVisibility(View.VISIBLE);
+                        break;
                 }
             }
+
             @Override
             public void onPageScrollStateChanged(int state) {
             }
